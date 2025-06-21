@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Search } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { MessageInput } from "./MessageInput";
@@ -22,6 +22,17 @@ interface ChatInterfaceProps {
 export function ChatInterface({ onClearMessages }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when messages change or loading state changes
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isLoading]);
 
   // Load messages from localStorage on component mount
   useEffect(() => {
@@ -145,7 +156,10 @@ export function ChatInterface({ onClearMessages }: ChatInterfaceProps) {
       </div>
 
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto px-4 md:px-6">
+      <div 
+        ref={chatContainerRef}
+        className="flex-1 overflow-y-auto px-4 md:px-6 scroll-smooth"
+      >
         {messages.length === 0 && (
           <div className="h-full flex items-center justify-center">
             <div className="max-w-2xl mx-auto px-6 text-center">
@@ -180,7 +194,7 @@ export function ChatInterface({ onClearMessages }: ChatInterfaceProps) {
           </div>
         )}
         
-        <div className="max-w-8xl mx-auto py-4">
+        <div className="max-w-6xl mx-auto py-4">
           {messages.map((message) => (
             <ChatMessage key={message.id} message={message} />
           ))}
@@ -188,6 +202,9 @@ export function ChatInterface({ onClearMessages }: ChatInterfaceProps) {
           {isLoading && (
             <ResearchSteps />
           )}
+          
+          {/* Invisible element to scroll to */}
+          <div ref={messagesEndRef} />
         </div>
       </div>
 
