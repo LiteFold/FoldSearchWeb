@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Search } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -55,15 +54,6 @@ export function ChatInterface() {
               resolution: "1.8 Å",
               description: "Small regulatory protein found in almost all tissues",
               pdbUrl: "https://www.rcsb.org/structure/1UBQ"
-            },
-            {
-              id: "2L7R",
-              name: "Ubiquitin-like protein",
-              similarity: "85%",
-              organism: "Mus musculus",
-              resolution: "2.1 Å",
-              description: "Ubiquitin-related modifier protein",
-              pdbUrl: "https://www.rcsb.org/structure/2L7R"
             }
           ],
           ligands: [
@@ -74,14 +64,6 @@ export function ChatInterface() {
               description: "Small molecule inhibitor of ubiquitin binding",
               smiles: "CC1=CC=C(C=C1)NC(=O)C2=CC=CC=C2",
               targets: ["Ubiquitin", "E3 ligase"]
-            },
-            {
-              id: "CHEMBL789012",
-              name: "Proteasome inhibitor",
-              activity: "IC50: 8.2 nM",
-              description: "Potent inhibitor of 26S proteasome",
-              smiles: "CN1CCN(CC1)C2=CC=C(C=C2)C(=O)N",
-              targets: ["26S Proteasome", "Ubiquitin pathway"]
             }
           ],
           papers: [
@@ -92,14 +74,6 @@ export function ChatInterface() {
               year: "2024",
               doi: "10.1038/s41594-024-001234",
               abstract: "Recent structural studies have revealed new insights into ubiquitin's regulatory mechanisms..."
-            },
-            {
-              title: "Targeting the ubiquitin-proteasome system in cancer therapy",
-              authors: "Johnson, M. et al.",
-              journal: "bioRxiv",
-              year: "2024",
-              doi: "10.1101/2024.01.123456",
-              abstract: "Novel therapeutic strategies targeting ubiquitin pathways show promise in oncology..."
             }
           ]
         }
@@ -112,44 +86,44 @@ export function ChatInterface() {
   return (
     <div className="flex flex-col h-screen bg-white">
       {/* Header */}
-      <div className="border-b border-gray-200 bg-white px-6 py-4">
-        <div className="flex items-center gap-4">
-          <SidebarTrigger className="hover:bg-gray-100 p-2 rounded-md text-gray-600" />
+      <div className="border-b border-gray-100 bg-white px-6 py-3">
+        <div className="flex items-center gap-3 max-w-6xl mx-auto">
+          <SidebarTrigger className="hover:bg-gray-50 p-2 rounded-md text-gray-500" />
           <div>
-            <h1 className="text-lg font-semibold text-gray-900">Research Assistant</h1>
-            <p className="text-sm text-gray-500">AI-powered search across PDB, ChEMBL, and scientific literature</p>
+            <h1 className="text-base font-medium text-gray-900">Research Assistant</h1>
+            <p className="text-xs text-gray-500">AI-powered search across PDB, ChEMBL, and scientific literature</p>
           </div>
         </div>
       </div>
 
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto p-6 bg-gray-50/30">
+      <div className="flex-1 overflow-y-auto">
         {messages.length === 0 && (
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center py-16">
-              <div className="w-12 h-12 rounded bg-gray-900 mx-auto mb-6 flex items-center justify-center">
-                <Search className="w-6 h-6 text-white" />
+          <div className="h-full flex items-center justify-center">
+            <div className="max-w-2xl mx-auto px-6 text-center">
+              <div className="w-10 h-10 rounded-lg bg-blue-600 mx-auto mb-6 flex items-center justify-center">
+                <Search className="w-5 h-5 text-white" />
               </div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-3">Start Your Research</h2>
-              <p className="text-gray-600 max-w-md mx-auto mb-8 leading-relaxed">
+              <h2 className="text-lg font-medium text-gray-900 mb-2">Start Your Research</h2>
+              <p className="text-sm text-gray-600 mb-8">
                 Search across protein databases, chemical libraries, and scientific literature to find comprehensive research insights.
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 max-w-2xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <button 
                   onClick={() => handleSendMessage("Find proteins similar to ubiquitin")}
-                  className="px-4 py-3 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm text-left"
+                  className="px-4 py-3 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors text-sm text-left"
                 >
                   Find proteins similar to ubiquitin
                 </button>
                 <button 
                   onClick={() => handleSendMessage("Show ligands that bind to EGFR")}
-                  className="px-4 py-3 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm text-left"
+                  className="px-4 py-3 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors text-sm text-left"
                 >
                   Show ligands that bind to EGFR
                 </button>
                 <button 
                   onClick={() => handleSendMessage("Latest papers on GPCR structures")}
-                  className="px-4 py-3 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm text-left"
+                  className="px-4 py-3 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors text-sm text-left"
                 >
                   Latest papers on GPCR structures
                 </button>
@@ -158,15 +132,13 @@ export function ChatInterface() {
           </div>
         )}
         
-        <div className="max-w-4xl mx-auto space-y-6">
-          {messages.map((message) => (
-            <ChatMessage key={message.id} message={message} />
-          ))}
-          
-          {isLoading && (
-            <ResearchSteps />
-          )}
-        </div>
+        {messages.map((message) => (
+          <ChatMessage key={message.id} message={message} />
+        ))}
+        
+        {isLoading && (
+          <ResearchSteps />
+        )}
       </div>
 
       {/* Message Input */}
