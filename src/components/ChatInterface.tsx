@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { MessageInput } from "./MessageInput";
@@ -12,18 +12,62 @@ export interface Message {
   timestamp: Date;
   researchData?: any;
   steps?: string[];
+  files?: File[];
 }
 
-export function ChatInterface() {
+interface ChatInterfaceProps {
+  onClearMessages?: () => void;
+}
+
+export function ChatInterface({ onClearMessages }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSendMessage = async (content: string) => {
+  // Load messages from localStorage on component mount
+  useEffect(() => {
+    const savedMessages = localStorage.getItem('chatMessages');
+    if (savedMessages) {
+      try {
+        const parsedMessages = JSON.parse(savedMessages);
+        // Convert timestamp strings back to Date objects
+        const messagesWithDates = parsedMessages.map((msg: any) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        }));
+        setMessages(messagesWithDates);
+      } catch (error) {
+        console.error('Error loading messages from localStorage:', error);
+      }
+    }
+  }, []);
+
+  // Save messages to localStorage whenever messages change
+  useEffect(() => {
+    localStorage.setItem('chatMessages', JSON.stringify(messages));
+  }, [messages]);
+
+  const clearMessages = () => {
+    setMessages([]);
+    localStorage.removeItem('chatMessages');
+    if (onClearMessages) {
+      onClearMessages();
+    }
+  };
+
+  // Expose clearMessages function to parent component
+  useEffect(() => {
+    if (onClearMessages) {
+      (window as any).clearChatMessages = clearMessages;
+    }
+  }, [onClearMessages]);
+
+  const handleSendMessage = async (content: string, files?: File[]) => {
     const userMessage: Message = {
       id: Date.now().toString(),
       content,
       isUser: true,
       timestamp: new Date(),
+      files: files || [],
     };
 
     setMessages(prev => [...prev, userMessage]);
@@ -31,9 +75,13 @@ export function ChatInterface() {
 
     // Simulate API delay and show research steps
     setTimeout(() => {
+      const fileInfo = files && files.length > 0 
+        ? ` (with ${files.length} uploaded file${files.length > 1 ? 's' : ''}: ${files.map(f => f.name).join(', ')})`
+        : '';
+      
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: `Research completed for "${content}". Found relevant data across multiple databases.`,
+        content: `Research completed for "${content}"${fileInfo}. Found relevant data across multiple databases.`,
         isUser: false,
         timestamp: new Date(),
         steps: [
@@ -97,7 +145,7 @@ export function ChatInterface() {
       </div>
 
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto px-4 md:px-6">
         {messages.length === 0 && (
           <div className="h-full flex items-center justify-center">
             <div className="max-w-2xl mx-auto px-6 text-center">
@@ -132,17 +180,23 @@ export function ChatInterface() {
           </div>
         )}
         
-        {messages.map((message) => (
-          <ChatMessage key={message.id} message={message} />
-        ))}
-        
-        {isLoading && (
-          <ResearchSteps />
-        )}
+        <div className="max-w-8xl mx-auto py-4">
+          {messages.map((message) => (
+            <ChatMessage key={message.id} message={message} />
+          ))}
+          
+          {isLoading && (
+            <ResearchSteps />
+          )}
+        </div>
       </div>
 
       {/* Message Input */}
-      <MessageInput onSendMessage={handleSendMessage} isLoading={isLoading} />
+      <div className="px-4 md:px-6">
+        <div className="max-w-6xl mx-auto">
+          <MessageInput onSendMessage={handleSendMessage} isLoading={isLoading} />
+        </div>
+      </div>
     </div>
   );
 }
