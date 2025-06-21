@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { Search } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { MessageInput } from "./MessageInput";
 import { ChatMessage } from "./ChatMessage";
