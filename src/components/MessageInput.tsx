@@ -7,6 +7,7 @@ import { Send, Paperclip, X, File } from "lucide-react";
 interface MessageInputProps {
   onSendMessage: (message: string, files?: File[]) => void;
   isLoading: boolean;
+  disabled?: boolean;
 }
 
 interface UploadedFile {
@@ -14,14 +15,14 @@ interface UploadedFile {
   id: string;
 }
 
-export function MessageInput({ onSendMessage, isLoading }: MessageInputProps) {
+export function MessageInput({ onSendMessage, isLoading, disabled = false }: MessageInputProps) {
   const [message, setMessage] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if ((message.trim() || uploadedFiles.length > 0) && !isLoading) {
+    if ((message.trim() || uploadedFiles.length > 0) && !isLoading && !disabled) {
       onSendMessage(message.trim(), uploadedFiles.map(uf => uf.file));
       setMessage("");
       setUploadedFiles([]);
@@ -117,9 +118,9 @@ export function MessageInput({ onSendMessage, isLoading }: MessageInputProps) {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask about proteins, ligands, structures, or recent research..."
+                placeholder={disabled ? "Connect to backend to start searching..." : "Ask about proteins, ligands, structures, or recent research..."}
                 className="min-h-[52px] max-h-[200px] resize-none border border-gray-200 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm rounded-lg placeholder:text-gray-400 pr-12"
-                disabled={isLoading}
+                disabled={isLoading || disabled}
               />
               
               {/* File Upload Button */}
@@ -131,14 +132,14 @@ export function MessageInput({ onSendMessage, isLoading }: MessageInputProps) {
                   accept=".fasta,.fas,.fa,.pdb"
                   onChange={handleFileUpload}
                   className="hidden"
-                  disabled={isLoading || uploadedFiles.length >= 5}
+                  disabled={isLoading || disabled || uploadedFiles.length >= 5}
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={isLoading || uploadedFiles.length >= 5}
+                  disabled={isLoading || disabled || uploadedFiles.length >= 5}
                   className="h-8 w-8 p-0 hover:bg-gray-100 text-gray-500 hover:text-gray-700"
                 >
                   <Paperclip className="w-4 h-4" />
@@ -148,7 +149,7 @@ export function MessageInput({ onSendMessage, isLoading }: MessageInputProps) {
             
             <Button
               type="submit"
-              disabled={(!message.trim() && uploadedFiles.length === 0) || isLoading}
+              disabled={(!message.trim() && uploadedFiles.length === 0) || isLoading || disabled}
               className="h-[52px] px-5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-100 disabled:text-gray-400 rounded-lg font-medium transition-colors"
             >
               <Send className="w-4 h-4" />
