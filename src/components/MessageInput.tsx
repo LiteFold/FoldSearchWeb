@@ -74,95 +74,91 @@ export function MessageInput({ onSendMessage, isLoading, disabled = false }: Mes
   };
 
   return (
-    <div className="border-t border-gray-100 bg-white">
-      <div className="max-w-6xl mx-auto px-6 py-4">
-        {/* File Upload Area */}
-        {uploadedFiles.length > 0 && (
-          <div className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-gray-600">
-                Uploaded Files ({uploadedFiles.length}/5)
-              </span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {uploadedFiles.map((uploadedFile) => (
-                <Badge
-                  key={uploadedFile.id}
-                  variant="secondary"
-                  className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 hover:bg-gray-50"
-                >
-                  {getFileIcon(uploadedFile.file.name)}
-                  <span className="text-xs font-medium">
-                    {uploadedFile.file.name}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    ({getFileSize(uploadedFile.file.size)})
-                  </span>
-                  <button
-                    onClick={() => removeFile(uploadedFile.id)}
-                    className="ml-1 hover:bg-gray-200 rounded-full p-0.5 transition-colors"
-                  >
-                    <X className="w-3 h-3 text-gray-500" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
+    <div className="bg-transparent">
+      {/* File Upload Area */}
+      {uploadedFiles.length > 0 && (
+        <div className="mb-4 p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-slate-200">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-medium text-slate-700">
+              Uploaded Files ({uploadedFiles.length}/5)
+            </span>
           </div>
-        )}
-
-        {/* Input Form */}
-        <form onSubmit={handleSubmit}>
-          <div className="flex gap-3 items-end">
-            <div className="flex-1 relative">
-              <Textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={disabled ? "Connect to backend to start searching..." : "Ask about proteins, ligands, structures, or recent research..."}
-                className="min-h-[52px] max-h-[200px] resize-none border border-gray-200 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm rounded-lg placeholder:text-gray-400 pr-12"
-                disabled={isLoading || disabled}
-              />
-              
-              {/* File Upload Button */}
-              <div className="absolute right-3 bottom-3">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  multiple
-                  accept=".fasta,.fas,.fa,.pdb"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                  disabled={isLoading || disabled || uploadedFiles.length >= 5}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isLoading || disabled || uploadedFiles.length >= 5}
-                  className="h-8 w-8 p-0 hover:bg-gray-100 text-gray-500 hover:text-gray-700"
+          <div className="flex flex-wrap gap-2">
+            {uploadedFiles.map((uploadedFile) => (
+              <Badge
+                key={uploadedFile.id}
+                className="flex items-center gap-2 px-3 py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+              >
+                {getFileIcon(uploadedFile.file.name)}
+                <span className="text-sm font-medium">
+                  {uploadedFile.file.name}
+                </span>
+                <span className="text-xs text-slate-500">
+                  ({getFileSize(uploadedFile.file.size)})
+                </span>
+                <button
+                  onClick={() => removeFile(uploadedFile.id)}
+                  className="ml-1 hover:bg-slate-300 rounded-full p-1 transition-colors"
                 >
-                  <Paperclip className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
+                  <X className="w-3 h-3 text-slate-500" />
+                </button>
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Input Form */}
+      <form onSubmit={handleSubmit}>
+        <div className="flex gap-3 items-end">
+          <div className="flex-1 relative">
+            <Textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={disabled ? "Connect to backend to start searching..." : "Ask about proteins, ligands, structures, or recent research..."}
+              className="min-h-[56px] max-h-[200px] resize-none border-2 border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm rounded-2xl placeholder:text-slate-400 pr-14 transition-all"
+              disabled={isLoading || disabled}
+            />
             
-            <Button
-              type="submit"
-              disabled={(!message.trim() && uploadedFiles.length === 0) || isLoading || disabled}
-              className="h-[52px] px-5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-100 disabled:text-gray-400 rounded-lg font-medium transition-colors"
-            >
-              <Send className="w-4 h-4" />
-            </Button>
+            {/* File Upload Button */}
+            <div className="absolute right-4 bottom-4">
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept=".fasta,.fas,.fa,.pdb"
+                onChange={handleFileUpload}
+                className="hidden"
+                disabled={isLoading || disabled || uploadedFiles.length >= 5}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isLoading || disabled || uploadedFiles.length >= 5}
+                className="h-8 w-8 p-0 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-xl transition-colors"
+              >
+                <Paperclip className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
           
-          {/* Help Text */}
-          <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
-            <span>Press Enter to send, Shift+Enter for new line</span>
-            <span>Supports FASTA (.fasta, .fas, .fa) and PDB (.pdb) files • Max 5 files</span>
-          </div>
-        </form>
-      </div>
+          <Button
+            type="submit"
+            disabled={(!message.trim() && uploadedFiles.length === 0) || isLoading || disabled}
+            className="h-[56px] px-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:bg-slate-100 disabled:text-slate-400 rounded-2xl font-medium transition-all shadow-sm"
+          >
+            <Send className="w-4 h-4" />
+          </Button>
+        </div>
+        
+        {/* Help Text */}
+        <div className="mt-3 text-center text-xs text-slate-500">
+          Press <kbd className="px-1.5 py-0.5 bg-slate-100 rounded text-slate-600">Enter</kbd> to send • <kbd className="px-1.5 py-0.5 bg-slate-100 rounded text-slate-600">Shift+Enter</kbd> for new line • Supports FASTA & PDB files
+        </div>
+      </form>
     </div>
   );
 }

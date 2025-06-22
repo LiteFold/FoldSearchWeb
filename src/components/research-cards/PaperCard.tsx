@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, BookOpen, Search, Quote, Download, Share2 } from "lucide-react";
+import { ExternalLink, BookOpen, Quote } from "lucide-react";
 import { useState } from "react";
 
 interface PaperCardProps {
@@ -24,108 +24,72 @@ export function PaperCard({ paper }: PaperCardProps) {
   const previewAbstract = paper.abstract;
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
-      <div className="space-y-6">
+    <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+      <div className="space-y-5">
         {/* Header */}
         <div>
-          <div className="flex items-start justify-between mb-3">
-            <h3 className="text-lg font-semibold text-gray-900 leading-snug flex-1 pr-4">
-              {paper.title}
-            </h3>
-            <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-start gap-4 mb-3">
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-slate-900 leading-snug mb-2">
+                {paper.title}
+              </h3>
+              <p className="text-sm text-slate-600 mb-2">
+                {paper.authors}
+              </p>
+              <div className="flex items-center gap-3 text-sm text-slate-500">
+                <span className="font-medium">{paper.journal}</span>
+                <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+                <span>{paper.year}</span>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
               {isPreprintJournal && (
-                <Badge variant="outline" className="text-orange-700 border-orange-200 bg-orange-50">
+                <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">
                   Preprint
                 </Badge>
               )}
-              <Badge variant="outline" className="text-blue-700 border-blue-200 bg-blue-50">
+              <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
                 Open Access
               </Badge>
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-gray-700">
-              {paper.authors}
-            </p>
-            <div className="flex items-center gap-3 text-sm text-gray-600">
-              <span className="italic font-medium">{paper.journal}</span>
-              <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
-              <span>{paper.year}</span>
-              <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
-              <span className="text-xs bg-gray-100 px-2 py-1 rounded">Impact Factor: 12.3</span>
             </div>
           </div>
         </div>
 
         {/* Abstract */}
-        <div className="bg-gray-50 rounded-lg p-4">
+        <div className="bg-slate-50 rounded-xl p-4">
           <div className="flex items-center gap-2 mb-3">
-            <Quote className="w-4 h-4 text-gray-500" />
-            <span className="text-sm font-medium text-gray-700">Abstract</span>
+            <Quote className="w-4 h-4 text-slate-400" />
+            <span className="text-sm font-medium text-slate-700">Abstract</span>
           </div>
-          <div className="text-sm text-gray-700 leading-relaxed">
+          <div className="text-sm text-slate-700 leading-relaxed">
             <p className="mb-3">
               {isExpanded ? fullAbstract : previewAbstract}
             </p>
             <button 
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-blue-600 hover:text-blue-700 font-medium text-sm"
+              className="text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors"
             >
               {isExpanded ? 'Show less' : 'Read full abstract'}
             </button>
           </div>
         </div>
 
-
-
-        {/* Additional Info */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-500">Keywords:</span>
-            <div className="flex flex-wrap gap-1">
-              <Badge variant="outline" className="text-xs">Protein Structure</Badge>
-              <Badge variant="outline" className="text-xs">Drug Discovery</Badge>
-              <Badge variant="outline" className="text-xs">Molecular Dynamics</Badge>
-            </div>
-          </div>
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-500">Related Proteins:</span>
-            <span className="text-gray-700">Ubiquitin, E3 Ligase, Proteasome</span>
-          </div>
-        </div>
-
         {/* Actions */}
-        <div className="pt-4 border-t border-gray-100">
-          <div className="flex items-center justify-between">
-            <code className="text-xs font-mono text-gray-500 bg-gray-100 px-2 py-1 rounded">
-              {paper.doi}
-            </code>
-            
-            <div className="flex flex-wrap gap-2">
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                <BookOpen className="w-4 h-4 mr-2" />
-                Read Paper
-              </Button>
-              <Button variant="outline" size="sm">
-                <Search className="w-4 h-4 mr-2" />
-                Related
-              </Button>
-              <Button variant="outline" size="sm">
-                <Download className="w-4 h-4 mr-2" />
-                PDF
-              </Button>
-              <Button variant="ghost" size="sm">
-                <Share2 className="w-4 h-4 mr-2" />
-                Share
-              </Button>
-              <Button variant="ghost" size="sm" asChild>
-                <a href={`https://doi.org/${paper.doi}`} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  DOI
-                </a>
-              </Button>
-            </div>
+        <div className="flex items-center justify-between pt-2">
+          <code className="text-xs font-mono text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg">
+            {paper.doi}
+          </code>
+          
+          <div className="flex gap-2">
+            <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+              <BookOpen className="w-4 h-4 mr-2" />
+              Read Paper
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <a href={`https://doi.org/${paper.doi}`} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="w-4 h-4" />
+              </a>
+            </Button>
           </div>
         </div>
       </div>

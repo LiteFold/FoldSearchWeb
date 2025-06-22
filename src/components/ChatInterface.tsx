@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Search, Wifi, WifiOff } from "lucide-react";
+import { Search, Wifi, WifiOff, Sparkles } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
@@ -91,22 +91,13 @@ export function ChatInterface({ onClearMessages }: ChatInterfaceProps) {
       
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: hasResults ? `Research completed for "${transformedData.query}". 
+        content: hasResults ? `**Search Complete** ✨
 
-📊 **Search Summary:**
-• **Tools Used**: ${transformedData.totalToolsUsed} (${transformedData.successfulTools} successful, ${transformedData.failedTools} failed)
-• **Protein Structures**: ${totalStructures} found across ${toolsUsed} tools
-• **Research Papers**: ${papersFound} relevant publications
-• **Execution Time**: ${transformedData.executionTime.toFixed(2)}s
+Found **${totalStructures}** protein structures and **${papersFound}** research papers using **${transformedData.totalToolsUsed}** analysis tools.
 
-The results are organized by tool type below, with detailed metadata and 3D structure viewers for sequences.` : `Research completed for "${transformedData.query}".
+*Execution time: ${transformedData.executionTime.toFixed(1)}s*` : `**Search Complete**
 
-Unfortunately, no matching results were found in the available databases. This could be due to:
-• Query terms not matching existing database entries
-• Structures not yet deposited in public databases
-• Search parameters being too specific
-
-Try refining your search terms or exploring related concepts.`,
+No results found for your query. Try different search terms or check spelling.`,
         isUser: false,
         timestamp: new Date(),
         researchData: hasResults ? {
@@ -127,7 +118,7 @@ Try refining your search terms or exploring related concepts.`,
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: `I encountered an error while searching: ${error}. Please try again or check if the backend service is running at http://0.0.0.0:8000.`,
+        content: `I encountered an error while searching: ${error}. Please try again or check if the backend service is running at https://foldsearch-production.up.railway.app.`,
         isUser: false,
         timestamp: new Date(),
         error: error
@@ -160,7 +151,7 @@ Try refining your search terms or exploring related concepts.`,
     // Add a test message
     const testMessage: Message = {
       id: Date.now().toString(),
-      content: `Connection test ${isConnected ? 'successful' : 'failed'}. Backend is ${isConnected ? 'responding' : 'not responding'} at http://0.0.0.0:8000/health`,
+      content: `Connection test ${isConnected ? 'successful' : 'failed'}. Backend is ${isConnected ? 'responding' : 'not responding'} at https://foldsearch-production.up.railway.app/health`,
       isUser: false,
       timestamp: new Date(),
       error: isConnected ? undefined : 'Connection failed'
@@ -210,44 +201,36 @@ Try refining your search terms or exploring related concepts.`,
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 to-white">
       {/* Header */}
-      <div className="border-b border-gray-100 bg-white px-6 py-3">
+      <div className="border-b border-slate-200/60 bg-white/80 backdrop-blur-sm px-6 py-4">
         <div className="flex items-center justify-between max-w-6xl mx-auto">
           <div className="flex items-center gap-3">
-            <SidebarTrigger className="hover:bg-gray-50 p-2 rounded-md text-gray-500" />
+            <SidebarTrigger className="hover:bg-slate-100 p-2 rounded-xl text-slate-600 transition-colors" />
             <div>
-              <h1 className="text-base font-medium text-gray-900">Research Assistant</h1>
-              <p className="text-xs text-gray-500">AI-powered search across PDB, ChEMBL, and scientific literature</p>
+              <h1 className="text-lg font-semibold text-slate-900">Research Assistant</h1>
+              <p className="text-sm text-slate-500">AI-powered molecular & literature search</p>
             </div>
           </div>
           
-          {/* Connection Status & Test Button */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              {connectionStatus === 'connected' ? (
-                <Wifi className="w-4 h-4 text-green-600" />
-              ) : connectionStatus === 'disconnected' ? (
-                <WifiOff className="w-4 h-4 text-red-600" />
-              ) : (
-                <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
-              )}
-              <span className={`text-xs font-medium ${
-                connectionStatus === 'connected' ? 'text-green-600' : 
-                connectionStatus === 'disconnected' ? 'text-red-600' : 'text-gray-500'
-              }`}>
-                {connectionStatus === 'connected' ? 'Connected' : 
-                 connectionStatus === 'disconnected' ? 'Disconnected' : 'Testing...'}
-              </span>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleTestConnection}
-              className="text-xs"
-            >
-              Test Connection
-            </Button>
+          {/* Connection Status */}
+          <div className="flex items-center gap-2">
+            {connectionStatus === 'connected' ? (
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-full text-sm font-medium">
+                <Wifi className="w-4 h-4" />
+                Connected
+              </div>
+            ) : connectionStatus === 'disconnected' ? (
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-700 rounded-full text-sm font-medium">
+                <WifiOff className="w-4 h-4" />
+                Disconnected
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 text-slate-600 rounded-full text-sm font-medium">
+                <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div>
+                Testing...
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -255,49 +238,49 @@ Try refining your search terms or exploring related concepts.`,
       {/* Chat Messages */}
       <div 
         ref={chatContainerRef}
-        className="flex-1 overflow-y-auto px-4 md:px-6 scroll-smooth"
+        className="flex-1 overflow-y-auto scroll-smooth"
         style={{ 
           scrollbarWidth: 'thin',
-          scrollbarColor: '#d1d5db #f3f4f6'
+          scrollbarColor: '#cbd5e1 transparent'
         }}
       >
         {messages.length === 0 && (
-          <div className="h-full flex items-center justify-center">
-            <div className="max-w-2xl mx-auto px-6 text-center">
-              <div className="w-10 h-10 rounded-lg bg-blue-600 mx-auto mb-6 flex items-center justify-center">
-                <Search className="w-5 h-5 text-white" />
+          <div className="h-full flex items-center justify-center p-6">
+            <div className="max-w-2xl mx-auto text-center">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 mx-auto mb-6 flex items-center justify-center">
+                <Sparkles className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-lg font-medium text-gray-900 mb-2">Start Your Research</h2>
-              <p className="text-sm text-gray-600 mb-4">
-                Search across protein databases, chemical libraries, and scientific literature to find comprehensive research insights.
+              <h2 className="text-2xl font-bold text-slate-900 mb-3">Start Your Research</h2>
+              <p className="text-slate-600 mb-8 text-lg">
+                Search protein databases and scientific literature with AI-powered analysis
               </p>
               
               {/* Connection Status Warning */}
               {connectionStatus === 'disconnected' && (
-                <div className="mb-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <p className="text-xs text-yellow-800">
-                    ⚠️ Backend connection failed. Make sure the server is running at http://0.0.0.0:8000 and CORS is configured for browser requests.
+                <div className="mb-8 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                  <p className="text-sm text-amber-800">
+                    ⚠️ Backend connection failed. Service may be starting up...
                   </p>
                 </div>
               )}
               
               {/* Agent Selection */}
-              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-blue-900">Choose Your AI Agents</span>
-                  <span className="text-xs text-blue-700">
+              <div className="mb-8 p-6 bg-white rounded-2xl border border-slate-200 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="font-semibold text-slate-900">AI Agents</span>
+                  <span className="text-sm text-slate-500">
                     {proteinAgentEnabled && researchAgentEnabled ? "Combined Search" :
-                     researchAgentEnabled && !proteinAgentEnabled ? "Web Research Only" :
-                     proteinAgentEnabled && !researchAgentEnabled ? "Protein Search Only" :
-                     "No agents selected"}
+                     researchAgentEnabled && !proteinAgentEnabled ? "Literature Only" :
+                     proteinAgentEnabled && !researchAgentEnabled ? "Protein Only" :
+                     "Select agents"}
                   </span>
                 </div>
-                <div className="flex gap-2 mb-3">
+                <div className="flex gap-3 mb-4">
                   <Toggle
                     pressed={proteinAgentEnabled}
                     onPressedChange={setProteinAgentEnabled}
                     disabled={connectionStatus !== 'connected'}
-                    className="text-sm"
+                    className="data-[state=on]:bg-blue-500 data-[state=on]:text-white"
                   >
                     🧬 Protein Agent
                   </Toggle>
@@ -305,39 +288,41 @@ Try refining your search terms or exploring related concepts.`,
                     pressed={researchAgentEnabled}
                     onPressedChange={setResearchAgentEnabled}
                     disabled={connectionStatus !== 'connected'}
-                    className="text-sm"
+                    className="data-[state=on]:bg-purple-500 data-[state=on]:text-white"
                   >
                     📚 Research Agent
                   </Toggle>
                 </div>
-                <div className="text-xs text-blue-800">
-                  <p><strong>Protein Agent:</strong> Searches PDB structures, sequences, and binding data</p>
-                  <p><strong>Research Agent:</strong> Finds recent papers and generates research insights</p>
-                  <p><strong>Both:</strong> Comprehensive search combining literature review with structural analysis</p>
+                <div className="text-sm text-slate-600 space-y-1">
+                  <p><strong>Protein Agent:</strong> Structure analysis, sequence similarity, binding data</p>
+                  <p><strong>Research Agent:</strong> Literature search, recent papers, research insights</p>
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <button 
                   onClick={() => handleSendMessage("CRISPR Cas9 high fidelity variants with enhanced specificity")}
-                  className="px-4 py-3 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors text-sm text-left disabled:opacity-50"
+                  className="p-4 bg-white text-slate-700 rounded-xl hover:bg-slate-50 transition-colors text-sm text-left disabled:opacity-50 border border-slate-200 shadow-sm"
                   disabled={connectionStatus !== 'connected' || (!proteinAgentEnabled && !researchAgentEnabled)}
                 >
-                  CRISPR Cas9 high fidelity variants
+                  <div className="font-medium mb-1">CRISPR Cas9</div>
+                  <div className="text-slate-500">High fidelity variants</div>
                 </button>
                 <button 
                   onClick={() => handleSendMessage("Show ligands that bind to EGFR receptor")}
-                  className="px-4 py-3 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors text-sm text-left disabled:opacity-50"
+                  className="p-4 bg-white text-slate-700 rounded-xl hover:bg-slate-50 transition-colors text-sm text-left disabled:opacity-50 border border-slate-200 shadow-sm"
                   disabled={connectionStatus !== 'connected' || (!proteinAgentEnabled && !researchAgentEnabled)}
                 >
-                  EGFR receptor binding ligands
+                  <div className="font-medium mb-1">EGFR Ligands</div>
+                  <div className="text-slate-500">Receptor binding analysis</div>
                 </button>
                 <button 
                   onClick={() => handleSendMessage("Latest papers on GPCR structure determination")}
-                  className="px-4 py-3 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors text-sm text-left disabled:opacity-50"
+                  className="p-4 bg-white text-slate-700 rounded-xl hover:bg-slate-50 transition-colors text-sm text-left disabled:opacity-50 border border-slate-200 shadow-sm"
                   disabled={connectionStatus !== 'connected' || (!proteinAgentEnabled && !researchAgentEnabled)}
                 >
-                  GPCR structure studies
+                  <div className="font-medium mb-1">GPCR Structures</div>
+                  <div className="text-slate-500">Recent literature</div>
                 </button>
               </div>
             </div>
@@ -368,25 +353,25 @@ Try refining your search terms or exploring related concepts.`,
       </div>
 
       {/* Message Input */}
-      <div className="px-4 md:px-6">
+      <div className="px-6 pb-6">
         <div className="max-w-6xl mx-auto">
           {/* Agent Selection Toggles */}
-          <div className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-gray-600">Select Agents</span>
-              <span className="text-xs text-gray-500">
+          <div className="mb-4 p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-slate-200">
+            <div className="flex items-center justify-between mb-3">
+              <span className="font-medium text-slate-900">Active Agents</span>
+              <span className="text-sm text-slate-500">
                 {proteinAgentEnabled && researchAgentEnabled ? "Combined Search" :
-                 researchAgentEnabled && !proteinAgentEnabled ? "Web Research Only" :
-                 proteinAgentEnabled && !researchAgentEnabled ? "Protein Search Only" :
-                 "No agents selected"}
+                 researchAgentEnabled && !proteinAgentEnabled ? "Literature Only" :
+                 proteinAgentEnabled && !researchAgentEnabled ? "Protein Only" :
+                 "Select agents"}
               </span>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <Toggle
                 pressed={proteinAgentEnabled}
                 onPressedChange={setProteinAgentEnabled}
                 disabled={connectionStatus !== 'connected'}
-                className="text-xs"
+                className="data-[state=on]:bg-blue-500 data-[state=on]:text-white"
               >
                 🧬 Protein Agent
               </Toggle>
@@ -394,7 +379,7 @@ Try refining your search terms or exploring related concepts.`,
                 pressed={researchAgentEnabled}
                 onPressedChange={setResearchAgentEnabled}
                 disabled={connectionStatus !== 'connected'}
-                className="text-xs"
+                className="data-[state=on]:bg-purple-500 data-[state=on]:text-white"
               >
                 📚 Research Agent
               </Toggle>
