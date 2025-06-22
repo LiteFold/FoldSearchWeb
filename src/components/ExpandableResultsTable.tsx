@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { ChevronDown, ChevronRight, Activity, FlaskConical } from "lucide-react";
+import { ChevronDown, ChevronRight, Activity, FlaskConical, ExternalLink, Copy, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ProteinCard } from "./research-cards/ProteinCard";
 import { LigandCard } from "./research-cards/LigandCard";
+import { Molecular3DViewer } from "./Molecular3DViewer";
 import { cn } from "@/lib/utils";
 
 interface ProteinResult {
@@ -21,6 +22,25 @@ interface ProteinResult {
   sequence?: string;
   length?: number;
   method?: string;
+  // Real data from backend
+  realData?: {
+    title: string;
+    method: string;
+    resolution_A: number;
+    r_work: number;
+    r_free: number;
+    space_group: string;
+    deposition_date: string;
+    organisms: string[];
+    protein_chains: string[];
+    ligands: string[];
+    entities: any[];
+    assembly: any;
+    quality_score: string;
+    sequence: string;
+    sequence_length: number;
+    molecule_type: string;
+  };
 }
 
 interface LigandResult {
@@ -99,6 +119,10 @@ export function ExpandableResultsTable({
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
   };
 
   return (
@@ -204,211 +228,178 @@ export function ExpandableResultsTable({
                           <div className="space-y-6">
                             {/* Protein Details Header */}
                             <div className="flex items-center justify-between">
-                              <h3 className="text-lg font-semibold text-gray-900">Protein Details</h3>
-                              <Badge className="bg-blue-100 text-blue-800 border-blue-200">
-                                ID: {result.id}
-                              </Badge>
-                            </div>
-
-                            {/* Quick Info Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white rounded-lg border">
-                              <div>
-                                <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">
-                                  Experiment Details
-                                </h4>
-                                <div className="space-y-2">
-                                  <div>
-                                    <span className="text-xs text-gray-500">Organism:</span>
-                                    <p className="text-sm font-medium text-gray-900 italic">
-                                      {(result as ProteinResult).organism}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <span className="text-xs text-gray-500">Resolution:</span>
-                                    <p className="text-sm font-medium text-gray-900">
-                                      {(result as ProteinResult).resolution}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <span className="text-xs text-gray-500">Method:</span>
-                                    <p className="text-sm font-medium text-gray-900">
-                                      {(result as ProteinResult).method || 'X-ray diffraction'}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div>
-                                <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">
-                                  Results
-                                </h4>
-                                <div className="space-y-2">
-                                  <div className="bg-gray-50 rounded p-3">
-                                    <div className="text-sm font-medium text-gray-700">TM Score</div>
-                                    <div className="text-lg font-bold text-gray-900">
-                                      {(result as ProteinResult).tmScore.toFixed(4)}
-                                    </div>
-                                  </div>
-                                  <div className="bg-gray-50 rounded p-3">
-                                    <div className="text-sm font-medium text-gray-700">RMSD</div>
-                                    <div className="text-lg font-bold text-gray-900">
-                                      {(result as ProteinResult).rmsd.toFixed(4)}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div>
-                                <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">
-                                  Sequence Info
-                                </h4>
-                                <div className="space-y-2">
-                                  <div>
-                                    <span className="text-xs text-gray-500">Length:</span>
-                                    <p className="text-sm font-medium text-gray-900">
-                                      {(result as ProteinResult).length || '76'} residues
-                                    </p>
-                                  </div>
-                                  {(result as ProteinResult).sequence && (
-                                    <div>
-                                      <span className="text-xs text-gray-500">Sequence:</span>
-                                      <div className="mt-1 p-2 bg-white border rounded text-xs font-mono break-all">
-                                        {(result as ProteinResult).sequence?.substring(0, 50)}...
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Full Protein Card */}
-                            <div className="border-t pt-6">
-                              <ProteinCard 
-                                protein={{
-                                  id: result.id,
-                                  name: result.name,
-                                  similarity: result.similarity,
-                                  organism: (result as ProteinResult).organism,
-                                  resolution: (result as ProteinResult).resolution,
-                                  description: result.description,
-                                  pdbUrl: (result as ProteinResult).pdbUrl
-                                }}
-                              />
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="space-y-6">
-                            {/* Ligand Details Header */}
-                            <div className="flex items-center justify-between">
-                              <h3 className="text-lg font-semibold text-gray-900">Compound Details</h3>
+                              <h3 className="text-lg font-semibold text-gray-900">Protein Structure Details</h3>
                               <div className="flex gap-2">
-                                {(result as LigandResult).chemblId && (
-                                  <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200">
-                                    {(result as LigandResult).chemblId}
-                                  </Badge>
-                                )}
-                                <Badge className="bg-orange-100 text-orange-800 border-orange-200">
-                                  {(result as LigandResult).activity || 'Active'}
+                                <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                                  ID: {result.id}
                                 </Badge>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => window.open((result as ProteinResult).pdbUrl, '_blank')}
+                                >
+                                  <ExternalLink className="w-4 h-4 mr-2" />
+                                  View in RCSB
+                                </Button>
                               </div>
                             </div>
 
-                            {/* Quick Info Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white rounded-lg border">
-                              <div>
-                                <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">
-                                  Chemical Properties
-                                </h4>
-                                <div className="space-y-2">
-                                  <div>
-                                    <span className="text-xs text-gray-500">Molecular Weight:</span>
-                                    <p className="text-sm font-medium text-gray-900">
-                                      {(result as LigandResult).properties?.molecularWeight || '342.4'} g/mol
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <span className="text-xs text-gray-500">LogP:</span>
-                                    <p className="text-sm font-medium text-gray-900">
-                                      {(result as LigandResult).properties?.logP || '2.1'}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div>
-                                <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">
-                                  Drug-like Properties
-                                </h4>
-                                <div className="space-y-2">
-                                  <div>
-                                    <span className="text-xs text-gray-500">H-bond Acceptors:</span>
-                                    <p className="text-sm font-medium text-gray-900">
-                                      {(result as LigandResult).properties?.hba || '4'}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <span className="text-xs text-gray-500">H-bond Donors:</span>
-                                    <p className="text-sm font-medium text-gray-900">
-                                      {(result as LigandResult).properties?.hbd || '2'}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div>
-                                <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">
-                                  Activity & Targets
-                                </h4>
-                                <div className="space-y-2">
-                                  <div>
-                                    <span className="text-xs text-gray-500">Activity:</span>
-                                    <p className="text-sm font-medium text-gray-900">
-                                      {(result as LigandResult).activity || 'IC50: 12.5 µM'}
-                                    </p>
-                                  </div>
-                                  {(result as LigandResult).targets && (
+                            {/* Real Data Grid */}
+                            {(result as ProteinResult).realData && (
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white rounded-lg border">
+                                <div>
+                                  <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">
+                                    Experimental Details
+                                  </h4>
+                                  <div className="space-y-2 text-sm">
                                     <div>
-                                      <span className="text-xs text-gray-500">Known Targets:</span>
-                                      <div className="flex flex-wrap gap-1 mt-1">
-                                        {(result as LigandResult).targets?.slice(0, 2).map((target, idx) => (
-                                          <Badge key={idx} variant="outline" className="text-xs">
-                                            {target}
-                                          </Badge>
-                                        ))}
-                                      </div>
+                                      <span className="text-gray-500">Method:</span>
+                                      <p className="font-medium text-gray-900">
+                                        {(result as ProteinResult).realData?.method || 'N/A'}
+                                      </p>
                                     </div>
-                                  )}
+                                    <div>
+                                      <span className="text-gray-500">Resolution:</span>
+                                      <p className="font-medium text-gray-900">
+                                        {(result as ProteinResult).realData?.resolution_A ? 
+                                          `${(result as ProteinResult).realData!.resolution_A} Å` : 'N/A'}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-500">Space Group:</span>
+                                      <p className="font-medium text-gray-900">
+                                        {(result as ProteinResult).realData?.space_group || 'N/A'}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-500">Deposition:</span>
+                                      <p className="font-medium text-gray-900">
+                                        {(result as ProteinResult).realData?.deposition_date || 'N/A'}
+                                      </p>
+                                    </div>
+                                  </div>
                                 </div>
-                              </div>
-                            </div>
 
-                            {/* SMILES Display */}
-                            {(result as LigandResult).smiles && (
-                              <div className="p-4 bg-white rounded-lg border">
-                                <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">
-                                  SMILES Notation
-                                </h4>
-                                <code className="text-xs font-mono bg-gray-50 px-3 py-2 rounded border block break-all">
-                                  {(result as LigandResult).smiles}
-                                </code>
+                                <div>
+                                  <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">
+                                    Quality Metrics
+                                  </h4>
+                                  <div className="space-y-2 text-sm">
+                                    <div>
+                                      <span className="text-gray-500">R-work:</span>
+                                      <p className="font-medium text-gray-900">
+                                        {(result as ProteinResult).realData?.r_work || 'N/A'}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-500">R-free:</span>
+                                      <p className="font-medium text-gray-900">
+                                        {(result as ProteinResult).realData?.r_free || 'N/A'}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-500">Quality Score:</span>
+                                      <p className="font-medium text-gray-900">
+                                        {(result as ProteinResult).realData?.quality_score || 'N/A'}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">
+                                    Biological Information
+                                  </h4>
+                                  <div className="space-y-2 text-sm">
+                                    <div>
+                                      <span className="text-gray-500">Organisms:</span>
+                                      <p className="font-medium text-gray-900">
+                                        {(result as ProteinResult).realData?.organisms?.join(', ') || result.organism}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-500">Chains:</span>
+                                      <p className="font-medium text-gray-900">
+                                        {(result as ProteinResult).realData?.protein_chains?.join(', ') || 'N/A'}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-500">Ligands:</span>
+                                      <p className="font-medium text-gray-900">
+                                        {(result as ProteinResult).realData?.ligands?.join(', ') || 'None'}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-500">Sequence Length:</span>
+                                      <p className="font-medium text-gray-900">
+                                        {(result as ProteinResult).realData?.sequence_length || 'N/A'} residues
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
                               </div>
                             )}
 
-                            {/* Full Ligand Card */}
-                            <div className="border-t pt-6">
-                              <LigandCard 
-                                ligand={{
-                                  id: result.id,
-                                  name: result.name,
-                                  description: result.description,
-                                  smiles: (result as LigandResult).smiles,
-                                  chemblId: (result as LigandResult).chemblId,
-                                  activity: (result as LigandResult).activity,
-                                  properties: (result as LigandResult).properties,
-                                  targets: (result as LigandResult).targets
-                                }}
-                              />
-                            </div>
+                            {/* Sequence Section */}
+                            {(result as ProteinResult).realData?.sequence && (
+                              <div className="p-4 bg-white rounded-lg border">
+                                <div className="flex items-center justify-between mb-3">
+                                  <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wide">
+                                    Protein Sequence ({(result as ProteinResult).realData?.sequence_length} AA)
+                                  </h4>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => copyToClipboard((result as ProteinResult).realData?.sequence || '')}
+                                  >
+                                    <Copy className="w-4 h-4 mr-2" />
+                                    Copy FASTA
+                                  </Button>
+                                </div>
+                                <div className="bg-gray-50 p-3 rounded border font-mono text-xs break-all max-h-32 overflow-y-auto">
+                                  {(result as ProteinResult).realData?.sequence}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* 3D Structure Viewer */}
+                            {result.id && (
+                              <div className="p-4 bg-white rounded-lg border">
+                                <div className="flex items-center justify-between mb-3">
+                                  <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wide">
+                                    3D Protein Structure
+                                  </h4>
+                                  <Badge variant="outline" className="text-xs">
+                                    PDB: {result.id}
+                                  </Badge>
+                                </div>
+                                <div className="h-96 bg-gray-50 rounded border overflow-hidden">
+                                  <Molecular3DViewer 
+                                    pdbId={result.id}
+                                    type="protein"
+                                  />
+                                </div>
+                                <div className="mt-2 text-xs text-gray-500 text-center">
+                                  Interactive 3D viewer • Drag to rotate • Scroll to zoom
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="space-y-6">
+                            {/* Ligand Details using existing LigandCard */}
+                            <LigandCard 
+                              ligand={{
+                                id: result.id,
+                                name: result.name,
+                                description: result.description,
+                                smiles: (result as LigandResult).smiles,
+                                chemblId: (result as LigandResult).chemblId,
+                                activity: (result as LigandResult).activity,
+                                properties: (result as LigandResult).properties,
+                                targets: (result as LigandResult).targets
+                              }}
+                            />
                           </div>
                         )}
                       </div>

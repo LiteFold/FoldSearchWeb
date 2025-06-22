@@ -1,6 +1,7 @@
 import { Message } from "./ChatInterface";
 import { PaperCard } from "./research-cards/PaperCard";
-import { ExpandableResultsTable } from "./ExpandableResultsTable";
+import { ToolSpecificResults } from "./ToolSpecificResults";
+import { HighlightedText } from "./HighlightedText";
 import { Badge } from "@/components/ui/badge";
 import { User, Bot, File, FileText, AlertCircle } from "lucide-react";
 
@@ -40,13 +41,48 @@ export function ChatMessage({ message }: ChatMessageProps) {
           </div>
         )}
         
-        <div className="flex-1 min-w-0">
-          <div className="prose prose-sm max-w-none">
-            <p className={`text-sm leading-relaxed whitespace-pre-wrap ${
-              message.error ? 'text-red-700' : 'text-gray-700'
-            }`}>
-              {message.content}
-            </p>
+        <div className="flex-1 min-w-0 overflow-hidden">
+          {/* Conditional card wrapper for user messages */}
+          <div className={message.isUser ? 
+            "bg-gray-50/50 border border-gray-100 rounded-xl p-4 shadow-sm" : 
+            ""
+          }>
+            <div className="prose prose-sm max-w-none">
+              {/* Use HighlightedText component for better overflow handling and syntax highlighting */}
+              <HighlightedText 
+                text={message.content}
+                maxLength={message.isUser ? 800 : 1200} // Different limits for user vs assistant
+                className={message.error ? 'text-red-700' : ''}
+              />
+            </div>
+
+            {/* Attached Files for User Messages */}
+            {message.isUser && message.files && message.files.length > 0 && (
+              <div className="mt-3 p-3 bg-white rounded-lg border border-gray-200">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-gray-600">
+                    Attached Files ({message.files.length})
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {message.files.map((file, index) => (
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="flex items-center gap-2 px-2.5 py-1 bg-white border border-gray-200 text-gray-700"
+                    >
+                      {getFileIcon(file.name)}
+                      <span className="text-xs font-medium truncate max-w-32">
+                        {file.name}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        ({getFileSize(file.size)})
+                      </span>
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Error State */}
@@ -62,44 +98,31 @@ export function ChatMessage({ message }: ChatMessageProps) {
             </div>
           )}
 
-          {/* Attached Files for User Messages */}
-          {message.isUser && message.files && message.files.length > 0 && (
-            <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-gray-600">
-                  Attached Files ({message.files.length})
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {message.files.map((file, index) => (
-                  <Badge
-                    key={index}
-                    variant="secondary"
-                    className="flex items-center gap-2 px-2.5 py-1 bg-white border border-gray-200 text-gray-700"
-                  >
-                    {getFileIcon(file.name)}
-                    <span className="text-xs font-medium">
-                      {file.name}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      ({getFileSize(file.size)})
-                    </span>
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Research Results */}
           {message.researchData && !message.error && (
             <div className="mt-8 space-y-8">
-              {/* Research Papers - Always in Card Format */}
+              {/* Tool-Specific Results Section */}
+              {message.researchData.toolResults && Object.keys(message.researchData.toolResults).length > 0 && (
+                <div className="overflow-hidden"> {/* Add overflow handling */}
+                  <ToolSpecificResults 
+                    toolResults={message.researchData.toolResults}
+                    title="Protein Structure Analysis Results"
+                  />
+                </div>
+              )}
+
+              {/* Research Papers Section - Always in Card Format */}
               {message.researchData.papers && message.researchData.papers.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-orange-500"></span>
-                    Recent Literature ({message.researchData.papers.length})
-                  </h3>
+                <div className="overflow-hidden"> {/* Add overflow handling */}
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+                      Recent Literature ({message.researchData.papers.length})
+                    </h3>
+                    <Badge variant="outline" className="text-sm">
+                      {message.researchData.papers.length} Papers Found
+                    </Badge>
+                  </div>
                   <div className="space-y-4">
                     {message.researchData.papers.map((paper: any, index: number) => (
                       <PaperCard key={index} paper={paper} />
@@ -108,30 +131,11 @@ export function ChatMessage({ message }: ChatMessageProps) {
                 </div>
               )}
 
-              {/* Protein Results - Always in Table Format */}
-              {message.researchData.proteins && message.researchData.proteins.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                    Protein Structures ({message.researchData.proteins.length})
-                  </h3>
-                  <ExpandableResultsTable
-                    proteins={message.researchData.proteins.map((protein: any) => ({
-                      ...protein,
-                      tmScore: protein.tmScore || Math.random() * 0.5 + 0.5,
-                      rmsd: protein.rmsd || Math.random() * 2 + 0.5,
-                      status: protein.status || 'Success' as const,
-                      created: protein.created || new Date().toISOString(),
-                      pdbUrl: protein.pdbUrl || `https://www.rcsb.org/structure/${protein.id}`
-                    }))}
-                    title="Protein Search Results"
-                    showPagination={true}
-                  />
-                </div>
-              )}
+              {/* Search Summary Card */}
+
 
               {/* Empty Results State */}
-              {(!message.researchData.proteins || message.researchData.proteins.length === 0) &&
+              {(!message.researchData.toolResults || Object.keys(message.researchData.toolResults).length === 0) &&
                (!message.researchData.papers || message.researchData.papers.length === 0) && (
                 <div className="mt-8 p-6 bg-yellow-50 border border-yellow-200 rounded-lg">
                   <div className="flex items-center gap-2 mb-2">

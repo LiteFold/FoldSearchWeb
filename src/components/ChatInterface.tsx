@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Search, Wifi, WifiOff } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { Toggle } from "@/components/ui/toggle";
 import { MessageInput } from "./MessageInput";
 import { ChatMessage } from "./ChatMessage";
 import { ResearchSteps } from "./ResearchSteps";
@@ -24,11 +25,14 @@ interface ChatInterfaceProps {
 export function ChatInterface({ onClearMessages }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasSearchResults, setHasSearchResults] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState<'unknown' | 'connected' | 'disconnected'>('unknown');
+  const [proteinAgentEnabled, setProteinAgentEnabled] = useState(true); // Default on
+  const [researchAgentEnabled, setResearchAgentEnabled] = useState(false); // Default off
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   
-  const { searchData, loading, error, search, testConnection } = useSearch();
+  const { searchData, loading, error, search, webSearch, proteinSearch, testConnection } = useSearch();
 
   // Auto-scroll to bottom when messages change or loading state changes
   const scrollToBottom = () => {
@@ -76,15 +80,39 @@ export function ChatInterface({ onClearMessages }: ChatInterfaceProps) {
     if (searchData && !loading) {
       const transformedData = transformSearchData(searchData);
       
+      // Create summary message with tool statistics
+      const toolsUsed = Object.keys(transformedData.toolResults).length;
+      const totalStructures = transformedData.proteinCount;
+      const papersFound = transformedData.paperCount;
+      
+      // Determine if we have meaningful results
+      const hasResults = totalStructures > 0 || papersFound > 0 || toolsUsed > 0;
+      setHasSearchResults(hasResults);
+      
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: `Research completed for "${transformedData.query}". Found ${transformedData.proteinCount} protein structures and ${transformedData.paperCount} research papers. Execution time: ${transformedData.executionTime.toFixed(2)}s.`,
+        content: hasResults ? `Research completed for "${transformedData.query}". 
+
+📊 **Search Summary:**
+• **Tools Used**: ${transformedData.totalToolsUsed} (${transformedData.successfulTools} successful, ${transformedData.failedTools} failed)
+• **Protein Structures**: ${totalStructures} found across ${toolsUsed} tools
+• **Research Papers**: ${papersFound} relevant publications
+• **Execution Time**: ${transformedData.executionTime.toFixed(2)}s
+
+The results are organized by tool type below, with detailed metadata and 3D structure viewers for sequences.` : `Research completed for "${transformedData.query}".
+
+Unfortunately, no matching results were found in the available databases. This could be due to:
+• Query terms not matching existing database entries
+• Structures not yet deposited in public databases
+• Search parameters being too specific
+
+Try refining your search terms or exploring related concepts.`,
         isUser: false,
         timestamp: new Date(),
-        researchData: {
-          proteins: transformedData.proteins,
-          papers: transformedData.papers,
-        }
+        researchData: hasResults ? {
+          toolResults: transformedData.toolResults,
+          papers: transformedData.papers
+        } : undefined
       };
       
       setMessages(prev => [...prev, botMessage]);
@@ -95,6 +123,8 @@ export function ChatInterface({ onClearMessages }: ChatInterfaceProps) {
   // Handle search errors
   useEffect(() => {
     if (error && !loading) {
+      setHasSearchResults(false); // No results due to error
+      
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: `I encountered an error while searching: ${error}. Please try again or check if the backend service is running at http://0.0.0.0:8000.`,
@@ -150,13 +180,33 @@ export function ChatInterface({ onClearMessages }: ChatInterfaceProps) {
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
 
-    // Make API call to backend
-    await search({
-      query: content,
-      include_web: true,
-      include_protein: true,
-      max_protein_queries: 5
-    });
+    // Determine which API endpoint to use based on toggle state
+    if (proteinAgentEnabled && researchAgentEnabled) {
+      // Both enabled - use combined search
+      await search({
+        query: content,
+        include_web: true,
+        include_protein: true,
+        max_protein_queries: 8
+      });
+    } else if (researchAgentEnabled && !proteinAgentEnabled) {
+      // Only research agent enabled - use web search
+      await webSearch(content);
+    } else if (proteinAgentEnabled && !researchAgentEnabled) {
+      // Only protein agent enabled - use protein search
+      await proteinSearch(content);
+    } else {
+      // Neither enabled - show error
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: "Please enable at least one agent (Protein Agent or Research Agent) to perform a search.",
+        isUser: false,
+        timestamp: new Date(),
+        error: "No agents enabled"
+      };
+      setMessages(prev => [...prev, errorMessage]);
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -206,6 +256,10 @@ export function ChatInterface({ onClearMessages }: ChatInterfaceProps) {
       <div 
         ref={chatContainerRef}
         className="flex-1 overflow-y-auto px-4 md:px-6 scroll-smooth"
+        style={{ 
+          scrollbarWidth: 'thin',
+          scrollbarColor: '#d1d5db #f3f4f6'
+        }}
       >
         {messages.length === 0 && (
           <div className="h-full flex items-center justify-center">
@@ -227,27 +281,63 @@ export function ChatInterface({ onClearMessages }: ChatInterfaceProps) {
                 </div>
               )}
               
+              {/* Agent Selection */}
+              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-medium text-blue-900">Choose Your AI Agents</span>
+                  <span className="text-xs text-blue-700">
+                    {proteinAgentEnabled && researchAgentEnabled ? "Combined Search" :
+                     researchAgentEnabled && !proteinAgentEnabled ? "Web Research Only" :
+                     proteinAgentEnabled && !researchAgentEnabled ? "Protein Search Only" :
+                     "No agents selected"}
+                  </span>
+                </div>
+                <div className="flex gap-2 mb-3">
+                  <Toggle
+                    pressed={proteinAgentEnabled}
+                    onPressedChange={setProteinAgentEnabled}
+                    disabled={connectionStatus !== 'connected'}
+                    className="text-sm"
+                  >
+                    🧬 Protein Agent
+                  </Toggle>
+                  <Toggle
+                    pressed={researchAgentEnabled}
+                    onPressedChange={setResearchAgentEnabled}
+                    disabled={connectionStatus !== 'connected'}
+                    className="text-sm"
+                  >
+                    📚 Research Agent
+                  </Toggle>
+                </div>
+                <div className="text-xs text-blue-800">
+                  <p><strong>Protein Agent:</strong> Searches PDB structures, sequences, and binding data</p>
+                  <p><strong>Research Agent:</strong> Finds recent papers and generates research insights</p>
+                  <p><strong>Both:</strong> Comprehensive search combining literature review with structural analysis</p>
+                </div>
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <button 
-                  onClick={() => handleSendMessage("Find proteins similar to ubiquitin")}
+                  onClick={() => handleSendMessage("CRISPR Cas9 high fidelity variants with enhanced specificity")}
                   className="px-4 py-3 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors text-sm text-left disabled:opacity-50"
-                  disabled={connectionStatus !== 'connected'}
+                  disabled={connectionStatus !== 'connected' || (!proteinAgentEnabled && !researchAgentEnabled)}
                 >
-                  Find proteins similar to ubiquitin
+                  CRISPR Cas9 high fidelity variants
                 </button>
                 <button 
-                  onClick={() => handleSendMessage("Show ligands that bind to EGFR")}
+                  onClick={() => handleSendMessage("Show ligands that bind to EGFR receptor")}
                   className="px-4 py-3 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors text-sm text-left disabled:opacity-50"
-                  disabled={connectionStatus !== 'connected'}
+                  disabled={connectionStatus !== 'connected' || (!proteinAgentEnabled && !researchAgentEnabled)}
                 >
-                  Show ligands that bind to EGFR
+                  EGFR receptor binding ligands
                 </button>
                 <button 
-                  onClick={() => handleSendMessage("Latest papers on GPCR structures")}
+                  onClick={() => handleSendMessage("Latest papers on GPCR structure determination")}
                   className="px-4 py-3 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors text-sm text-left disabled:opacity-50"
-                  disabled={connectionStatus !== 'connected'}
+                  disabled={connectionStatus !== 'connected' || (!proteinAgentEnabled && !researchAgentEnabled)}
                 >
-                  Latest papers on GPCR structures
+                  GPCR structure studies
                 </button>
               </div>
             </div>
@@ -260,7 +350,16 @@ export function ChatInterface({ onClearMessages }: ChatInterfaceProps) {
           ))}
           
           {isLoading && (
-            <ResearchSteps isComplete={false} />
+            <ResearchSteps 
+              isComplete={false} 
+              hasResults={hasSearchResults}
+              searchType={
+                proteinAgentEnabled && researchAgentEnabled ? 'combined' :
+                researchAgentEnabled && !proteinAgentEnabled ? 'web' :
+                proteinAgentEnabled && !researchAgentEnabled ? 'protein' :
+                'combined'
+              }
+            />
           )}
           
           {/* Invisible element to scroll to */}
@@ -271,10 +370,41 @@ export function ChatInterface({ onClearMessages }: ChatInterfaceProps) {
       {/* Message Input */}
       <div className="px-4 md:px-6">
         <div className="max-w-6xl mx-auto">
+          {/* Agent Selection Toggles */}
+          <div className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-medium text-gray-600">Select Agents</span>
+              <span className="text-xs text-gray-500">
+                {proteinAgentEnabled && researchAgentEnabled ? "Combined Search" :
+                 researchAgentEnabled && !proteinAgentEnabled ? "Web Research Only" :
+                 proteinAgentEnabled && !researchAgentEnabled ? "Protein Search Only" :
+                 "No agents selected"}
+              </span>
+            </div>
+            <div className="flex gap-2">
+              <Toggle
+                pressed={proteinAgentEnabled}
+                onPressedChange={setProteinAgentEnabled}
+                disabled={connectionStatus !== 'connected'}
+                className="text-xs"
+              >
+                🧬 Protein Agent
+              </Toggle>
+              <Toggle
+                pressed={researchAgentEnabled}
+                onPressedChange={setResearchAgentEnabled}
+                disabled={connectionStatus !== 'connected'}
+                className="text-xs"
+              >
+                📚 Research Agent
+              </Toggle>
+            </div>
+          </div>
+          
           <MessageInput 
             onSendMessage={handleSendMessage} 
             isLoading={isLoading}
-            disabled={connectionStatus !== 'connected'}
+            disabled={connectionStatus !== 'connected' || (!proteinAgentEnabled && !researchAgentEnabled)}
           />
         </div>
       </div>

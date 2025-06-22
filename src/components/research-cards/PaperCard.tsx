@@ -77,21 +77,7 @@ export function PaperCard({ paper }: PaperCardProps) {
           </div>
         </div>
 
-        {/* Metrics */}
-        <div className="grid grid-cols-3 gap-4 py-4 bg-gray-50 rounded-lg px-4">
-          <div className="text-center">
-            <div className="text-lg font-semibold text-gray-900">23</div>
-            <div className="text-xs text-gray-500 uppercase tracking-wide">Citations</div>
-          </div>
-          <div className="text-center">
-            <div className="text-lg font-semibold text-gray-900">4.2k</div>
-            <div className="text-xs text-gray-500 uppercase tracking-wide">Views</div>
-          </div>
-          <div className="text-center">
-            <div className="text-lg font-semibold text-gray-900">89</div>
-            <div className="text-xs text-gray-500 uppercase tracking-wide">Downloads</div>
-          </div>
-        </div>
+
 
         {/* Additional Info */}
         <div className="space-y-3">

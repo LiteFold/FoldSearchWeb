@@ -100,4 +100,62 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Custom scrollbar styling for webkit browsers */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+  }
+
+  /* Ensure text selection works well with highlighted elements */
+  .prose ::selection {
+    background: rgba(59, 130, 246, 0.3);
+  }
+
+  /* Improve text wrapping for long sequences */
+  .break-sequence {
+    word-break: break-all;
+    overflow-wrap: break-word;
+  }
+
+  /* Smooth transitions for molecular data highlighting */
+  [class*="decoration-"] {
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+
+  /* Ensure proper text selection across highlighted content */
+  .group:hover [class*="decoration-"] {
+    text-decoration-thickness: 2px;
+  }
+
+  /* Subtle animation for copy feedback */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translate(-50%, 4px);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+  }
+
+  .copy-feedback {
+    animation: fadeInUp 0.2s ease-out;
+  }
 }
