@@ -86,44 +86,44 @@ export function ToolSpecificResults({ toolResults, title = "Analysis Results" }:
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-          <TrendingUp className="w-4 h-4 text-white" />
+        <div className="w-8 h-8 rounded-md bg-gray-100 flex items-center justify-center">
+          <TrendingUp className="w-4 h-4 text-gray-600" />
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-slate-900">{title}</h2>
-          <p className="text-sm text-slate-500">{totalResults} structures from {Object.keys(toolResults).length} tools</p>
+          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+          <p className="text-sm text-gray-500">{totalResults} structures from {Object.keys(toolResults).length} tools</p>
         </div>
       </div>
 
       {/* Tools */}
       <div className="space-y-3">
         {Object.entries(toolResults).map(([toolName, toolResult]) => (
-          <div key={toolName} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div key={toolName} className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
             {/* Tool Header */}
             <div 
-              className="px-6 py-4 cursor-pointer hover:bg-slate-50 transition-colors"
+              className="px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors"
               onClick={() => toggleTool(toolName)}
             >
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2">
                     {expandedTools.has(toolName) ? (
-                      <ChevronDown className="w-5 h-5 text-slate-400" />
+                      <ChevronDown className="w-4 h-4 text-gray-400" />
                     ) : (
-                      <ChevronRight className="w-5 h-5 text-slate-400" />
+                      <ChevronRight className="w-4 h-4 text-gray-400" />
                     )}
-                    <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
+                    <div className="w-7 h-7 rounded-md bg-gray-100 flex items-center justify-center">
                       {getToolIcon(toolName)}
                     </div>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-slate-900">
+                    <h3 className="font-semibold text-gray-900">
                       {getToolDisplayName(toolName)}
                     </h3>
-                    <div className="flex items-center gap-4 text-sm text-slate-500">
+                    <div className="flex items-center gap-4 text-sm text-gray-500">
                       <span>{toolResult.structures?.length || 0} results</span>
                       <span className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
@@ -136,7 +136,7 @@ export function ToolSpecificResults({ toolResults, title = "Analysis Results" }:
                 <Badge 
                   className={cn(
                     "text-xs font-medium",
-                    toolResult.success ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
+                    toolResult.success ? "bg-gray-100 text-gray-700" : "bg-red-100 text-red-700"
                   )}
                 >
                   {toolResult.success ? 'Success' : 'Failed'}
@@ -146,33 +146,33 @@ export function ToolSpecificResults({ toolResults, title = "Analysis Results" }:
 
             {/* Tool Content */}
             {expandedTools.has(toolName) && (
-              <div className="px-6 pb-6">
+              <div className="px-4 pb-4">
                 {/* Quick Stats */}
                 {toolResult.success && (toolResult.totalCount || toolResult.returnedCount) && (
-                  <div className="mb-6 p-4 bg-slate-50 rounded-xl">
+                  <div className="mb-4 p-3 bg-gray-50 rounded-md">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                       {toolResult.totalCount && (
                         <div>
-                          <div className="text-2xl font-bold text-slate-900">{toolResult.totalCount.toLocaleString()}</div>
-                          <div className="text-xs text-slate-500">Total Found</div>
+                          <div className="text-xl font-bold text-gray-900">{toolResult.totalCount.toLocaleString()}</div>
+                          <div className="text-xs text-gray-500">Total Found</div>
                         </div>
                       )}
                       {toolResult.returnedCount && (
                         <div>
-                          <div className="text-2xl font-bold text-slate-900">{toolResult.returnedCount}</div>
-                          <div className="text-xs text-slate-500">Returned</div>
+                          <div className="text-xl font-bold text-gray-900">{toolResult.returnedCount}</div>
+                          <div className="text-xs text-gray-500">Returned</div>
                         </div>
                       )}
                       {toolResult.executionTime && (
                         <div>
-                          <div className="text-2xl font-bold text-slate-900">{formatExecutionTime(toolResult.executionTime)}</div>
-                          <div className="text-xs text-slate-500">Execution Time</div>
+                          <div className="text-xl font-bold text-gray-900">{formatExecutionTime(toolResult.executionTime)}</div>
+                          <div className="text-xs text-gray-500">Execution Time</div>
                         </div>
                       )}
                       {toolResult.structures?.length && (
                         <div>
-                          <div className="text-2xl font-bold text-slate-900">{toolResult.structures.length}</div>
-                          <div className="text-xs text-slate-500">Structures</div>
+                          <div className="text-xl font-bold text-gray-900">{toolResult.structures.length}</div>
+                          <div className="text-xs text-gray-500">Structures</div>
                         </div>
                       )}
                     </div>
@@ -220,25 +220,25 @@ export function ToolSpecificResults({ toolResults, title = "Analysis Results" }:
 
                 {/* No Results Message */}
                 {(!toolResult.structures || toolResult.structures.length === 0) && (
-                  <div className="text-center py-8 text-slate-400">
-                    <Database className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <div className="text-center py-6 text-gray-400">
+                    <Database className="w-6 h-6 mx-auto mb-2 opacity-50" />
                     <p className="text-sm">No structures found</p>
                   </div>
                 )}
 
                 {/* 3D Structure Viewers - Simplified */}
                 {toolResult.structures && toolResult.structures.some((s: any) => s.sequence && s.pdb_id) && (
-                  <div className="mt-6">
-                    <h4 className="font-semibold text-slate-900 mb-4">3D Structure Viewers</h4>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div className="mt-4">
+                    <h4 className="font-semibold text-gray-900 mb-3">3D Structure Viewers</h4>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                       {toolResult.structures
                         .filter((structure: any) => structure.sequence && structure.pdb_id)
                         .slice(0, 2) // Show max 2 structures to reduce overwhelm
                         .map((structure: any) => (
-                          <div key={structure.pdb_id} className="border border-slate-200 rounded-xl overflow-hidden">
-                            <div className="p-4 bg-slate-50 border-b">
-                              <h5 className="font-medium text-slate-900 mb-1">{structure.title || structure.pdb_id}</h5>
-                              <div className="flex items-center gap-4 text-sm text-slate-500">
+                          <div key={structure.pdb_id} className="border border-gray-200 rounded-md overflow-hidden">
+                            <div className="p-3 bg-gray-50 border-b">
+                              <h5 className="font-medium text-gray-900 mb-1">{structure.title || structure.pdb_id}</h5>
+                              <div className="flex items-center gap-4 text-sm text-gray-500">
                                 <span>{structure.pdb_id}</span>
                                 <span>{structure.sequence_length} AA</span>
                                 {structure.resolution && <span>{structure.resolution}</span>}

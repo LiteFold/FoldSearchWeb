@@ -24,31 +24,31 @@ export function PaperCard({ paper }: PaperCardProps) {
   const previewAbstract = paper.abstract;
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
-      <div className="space-y-5">
+    <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+      <div className="space-y-4">
         {/* Header */}
         <div>
-          <div className="flex items-start gap-4 mb-3">
+          <div className="flex items-start gap-3 mb-2">
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-slate-900 leading-snug mb-2">
+              <h3 className="text-base font-semibold text-gray-900 leading-snug mb-2">
                 {paper.title}
               </h3>
-              <p className="text-sm text-slate-600 mb-2">
+              <p className="text-sm text-gray-600 mb-2">
                 {paper.authors}
               </p>
-              <div className="flex items-center gap-3 text-sm text-slate-500">
+              <div className="flex items-center gap-3 text-sm text-gray-500">
                 <span className="font-medium">{paper.journal}</span>
-                <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
                 <span>{paper.year}</span>
               </div>
             </div>
             <div className="flex flex-col gap-2">
               {isPreprintJournal && (
-                <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">
+                <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">
                   Preprint
                 </Badge>
               )}
-              <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+              <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">
                 Open Access
               </Badge>
             </div>
@@ -56,18 +56,18 @@ export function PaperCard({ paper }: PaperCardProps) {
         </div>
 
         {/* Abstract */}
-        <div className="bg-slate-50 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Quote className="w-4 h-4 text-slate-400" />
-            <span className="text-sm font-medium text-slate-700">Abstract</span>
+        <div className="bg-gray-50 rounded-md p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <Quote className="w-4 h-4 text-gray-400" />
+            <span className="text-sm font-medium text-gray-700">Abstract</span>
           </div>
-          <div className="text-sm text-slate-700 leading-relaxed">
-            <p className="mb-3">
+          <div className="text-sm text-gray-700 leading-relaxed">
+            <p className="mb-2">
               {isExpanded ? fullAbstract : previewAbstract}
             </p>
             <button 
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors"
+              className="text-gray-900 hover:text-gray-700 font-medium text-sm transition-colors"
             >
               {isExpanded ? 'Show less' : 'Read full abstract'}
             </button>
@@ -75,13 +75,13 @@ export function PaperCard({ paper }: PaperCardProps) {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-between pt-2">
-          <code className="text-xs font-mono text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg">
+        <div className="flex items-center justify-between pt-1">
+          <code className="text-xs font-mono text-gray-500 bg-gray-100 px-2 py-1 rounded">
             {paper.doi}
           </code>
           
           <div className="flex gap-2">
-            <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+            <Button size="sm" className="bg-gray-900 hover:bg-gray-800">
               <BookOpen className="w-4 h-4 mr-2" />
               Read Paper
             </Button>

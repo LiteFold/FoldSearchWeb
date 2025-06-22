@@ -1,6 +1,14 @@
 import { useState } from "react";
 
-const API_BASE_URL = "https://foldsearch-production.up.railway.app";
+// Environment-based API URL configuration
+// Set to development mode - change to false for production
+const IS_DEVELOPMENT = true;
+
+const API_BASE_URL = IS_DEVELOPMENT 
+  ? "http://0.0.0.0:8000" 
+  : "https://foldsearch-production.up.railway.app";
+
+console.log(`🔗 API Base URL: ${API_BASE_URL} (${IS_DEVELOPMENT ? 'Development' : 'Production'} mode)`);
 
 // API Interfaces based on updated backend documentation
 interface ResearchPaper {
@@ -55,6 +63,14 @@ interface BaseProteinSearchResult {
   search_metadata: Record<string, any>;
 }
 
+export interface BiologicalAnalysis {
+  query: string;
+  analysis_type: string;
+  analysis_text: string;
+  timestamp: string;
+  processing_time: number;
+}
+
 interface CombinedSearchResult {
   query: string;
   tool_results: Record<string, any>; // Tool name -> Tool result
@@ -66,6 +82,7 @@ interface CombinedSearchResult {
   successful_tools: number;
   failed_tools: number;
   total_execution_time: number;
+  biological_analysis?: BiologicalAnalysis | null;
 }
 
 interface SearchResponse {
@@ -216,7 +233,8 @@ export const useSearch = (): SearchHook => {
           total_tools_used: 1,
           successful_tools: data.success ? 1 : 0,
           failed_tools: data.success ? 0 : 1,
-          total_execution_time: data.execution_time
+          total_execution_time: data.execution_time,
+          biological_analysis: data.data?.biological_analysis || null
         },
         execution_time: data.execution_time,
         timestamp: data.timestamp
@@ -298,7 +316,8 @@ export const useSearch = (): SearchHook => {
           total_tools_used: proteinResults.length,
           successful_tools: proteinResults.filter((r: any) => r.success).length,
           failed_tools: proteinResults.filter((r: any) => !r.success).length,
-          total_execution_time: data.execution_time
+          total_execution_time: data.execution_time,
+          biological_analysis: data.data?.biological_analysis || null
         },
         execution_time: data.execution_time,
         timestamp: data.timestamp
