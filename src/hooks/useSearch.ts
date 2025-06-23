@@ -2,7 +2,7 @@ import { useState } from "react";
 
 // Environment-based API URL configuration
 // Set to development mode - change to false for production
-const IS_DEVELOPMENT = true;
+const IS_DEVELOPMENT = false;
 
 const API_BASE_URL = IS_DEVELOPMENT 
   ? "http://0.0.0.0:8000" 
